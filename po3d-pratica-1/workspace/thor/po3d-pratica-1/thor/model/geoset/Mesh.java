@@ -3,6 +3,8 @@ package thor.model.geoset;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
 import javax.media.opengl.GL2;
@@ -174,7 +176,32 @@ public abstract class Mesh extends Object {
 		 * * _vertices -> contains a list of all vertices of the mesh
 		 * * _faces -> contains the list of the id of the vertices that from it
 		 */
-		return false;
+
+		int numVertices = _vertices.size();
+		int aux1 = numVertices;
+		int aux2 = numVertices;
+		int edgeMatrix[][] = new int[numVertices][numVertices];
+		for(Face f : _faces){
+			numVertices = f.Vertices.size();
+			while(numVertices-- > 1){
+				int firstVertId = f.Vertices.get(numVertices);
+				int secondVertId = f.Vertices.get(numVertices - 1);
+				edgeMatrix[firstVertId][secondVertId]++;
+				edgeMatrix[secondVertId][firstVertId]++;
+			}
+		}
+		
+
+		while(aux1-- > 0 ){
+			while( aux2-- > 0){
+				if(edgeMatrix[aux1][aux2] > 2){
+					return false;
+				}
+			
+			}
+			aux2 = -1;
+	   }		
+		return true; 
 	}
 	
 	public double calculateArea(List<Integer> l){
