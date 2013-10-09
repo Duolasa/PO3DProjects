@@ -164,6 +164,7 @@ public abstract class Mesh extends Object {
 		 * * _maxVertex -> contains the max values of each coordinate
 		 * * _minVertex -> contains the min values of each coordinate
 		 */
+	
 		return new Point3D.Double();
 	}
 	
@@ -175,6 +176,51 @@ public abstract class Mesh extends Object {
 		 */
 		return false;
 	}
+	
+	public double calculateArea(List<Integer> l){
+		double area = 0;		
+		if(l.size() == 3){   // face is a triangle
+			List<Vertex> vertexOfCurrentFace = new ArrayList<Vertex>();
+			
+			for(Integer id : l){
+				vertexOfCurrentFace.add(_vertices.get(id));
+			}
+			
+			double distanceAB = Math.sqrt(Math.pow(vertexOfCurrentFace.get(1).x - vertexOfCurrentFace.get(0).x, 2) + 
+										  Math.pow(vertexOfCurrentFace.get(1).y - vertexOfCurrentFace.get(0).y, 2) + 
+										  Math.pow(vertexOfCurrentFace.get(1).z - vertexOfCurrentFace.get(0).z, 2));
+			
+			double distanceBC =  Math.sqrt(Math.pow(vertexOfCurrentFace.get(2).x - vertexOfCurrentFace.get(1).x, 2) + 
+										  Math.pow(vertexOfCurrentFace.get(2).y - vertexOfCurrentFace.get(1).y, 2) + 
+					  					  Math.pow(vertexOfCurrentFace.get(2).z - vertexOfCurrentFace.get(1).z, 2));
+			
+			double distanceCA =  Math.sqrt(Math.pow(vertexOfCurrentFace.get(0).x - vertexOfCurrentFace.get(2).x, 2) + 
+										  Math.pow(vertexOfCurrentFace.get(0).y - vertexOfCurrentFace.get(2).y, 2) + 
+										  Math.pow(vertexOfCurrentFace.get(0).z - vertexOfCurrentFace.get(2).z, 2));
+			
+			double s = (distanceAB + distanceBC + distanceCA) /2 ;
+			
+			area = Math.sqrt(s*(s-distanceAB)*(s-distanceBC)*(s-distanceCA));
+		
+			
+		}else if(l.size() == 4){   //quadrilateral
+			List<Integer> firstHalf = new  ArrayList<Integer>();
+			List<Integer> secondHalf = new  ArrayList<Integer>();
+			
+			
+			//divide the quadrilateral in 2 triangles
+			firstHalf.add(l.get(0));
+			firstHalf.add(l.get(1));
+			firstHalf.add(l.get(2));
+			
+			secondHalf.add(l.get(0));
+			secondHalf.add(l.get(3));
+			secondHalf.add(l.get(2));
+			
+			area = calculateArea(firstHalf) + calculateArea(secondHalf);
+		}
+		return area;
+	}
 
 	public double getSurfaceArea() {
 		/* TODO: PO3D Pratica 1 - calculate and return the surface area 
@@ -182,6 +228,11 @@ public abstract class Mesh extends Object {
 		 * * _vertices -> contains a list of all vertices of the mesh
 		 * * _faces -> contains the list of the id of the vertices that from it
 		 */
-		return 0;
+		double totalArea = 0;
+		for(Face f : _faces){
+			totalArea += calculateArea(f.Vertices); 
+		}
+		
+		return totalArea; 
 	}
 }
