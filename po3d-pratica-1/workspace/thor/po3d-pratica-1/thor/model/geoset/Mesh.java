@@ -167,17 +167,47 @@ public abstract class Mesh extends Object {
 		int pointsOnEntireMesh = 1000;
 		int pointsToUse = (int) Math.round((calculateArea(l)*pointsOnEntireMesh) / totalArea);
 		Point3D sumOfPoints = new Point3D.Double();
-		Random generator = new Random( System.currentTimeMillis() );
+		Random generator = new Random( System.currentTimeMillis());
+		int holdOriginalValue = pointsToUse;
 		
 		while(pointsToUse-- > 0){
-			// generate random point after zeroing the existing points
-			//create some mockup points maybe
 			
-		}
-		
-		
-		return new Point3D.Double();
+			Point3D originPoint = new Point3D.Double(
+										_vertices.get(l.get(0)).x, 
+										_vertices.get(l.get(0)).y,	
+										_vertices.get(l.get(0)).z);
+			
+			Point3D point1Offset = new Point3D.Double
+										(_vertices.get(l.get(1)).x - originPoint.getX(),
+										_vertices.get(l.get(1)).y - originPoint.getY() ,
+										_vertices.get(l.get(1)).z - originPoint.getZ());
+			
+			Point3D point2Offset = new Point3D.Double
+					(_vertices.get(l.get(2)).x - originPoint.getX(),
+					_vertices.get(l.get(2)).y - originPoint.getY() ,
+					_vertices.get(l.get(2)).z - originPoint.getZ());
 
+			
+		
+			double generatedNumber = generator.nextDouble();
+			
+			originPoint.add(new Point3D.Double(point1Offset.getX() * generatedNumber,
+												point1Offset.getY() * generatedNumber,
+												point1Offset.getZ() * generatedNumber));
+					
+			generatedNumber = generator.nextDouble();
+
+			originPoint.add(new Point3D.Double(point2Offset.getX() * generatedNumber,
+											   point2Offset.getY() * generatedNumber,
+											   point2Offset.getZ() * generatedNumber));
+							
+			
+			sumOfPoints.add(originPoint);
+		}				
+		System.out.println(holdOriginalValue);
+		return new Point3D.Double(sumOfPoints.getX() / holdOriginalValue,
+								  sumOfPoints.getY() / holdOriginalValue,
+								  sumOfPoints.getZ() / holdOriginalValue);
 	}
 	
 	public Point3D getBarycenter() {
@@ -189,9 +219,10 @@ public abstract class Mesh extends Object {
 		Point3D center = new Point3D.Double();
 		double totalArea = getSurfaceArea();
 		for(Face f : _faces){
+			System.out.println(center.getX() + " " + center.getY() + " " + center.getZ() + " ");
+
 			if(f.Vertices.size() == 3){
 				center.add(calcFacePoints(f.Vertices, totalArea));
-				//do stuff
 				
 			} else if(f.Vertices.size() == 4){
 				List<Integer> firstHalf = new  ArrayList<Integer>();
@@ -210,11 +241,11 @@ public abstract class Mesh extends Object {
 				center.add(calcFacePoints(firstHalf, totalArea)); 
 				center.add(calcFacePoints(secondHalf, totalArea));
 			}
+
 		
 		}
 		
-	
-		return center;
+		return new Point3D.Double();
 	}
 	
 	public boolean isManifold() {
