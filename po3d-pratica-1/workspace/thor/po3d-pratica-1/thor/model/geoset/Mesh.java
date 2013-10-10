@@ -164,7 +164,22 @@ public abstract class Mesh extends Object {
 	
 	
 	public Point3D calcFacePoints(List<Integer> l, double totalArea){
-		int pointsOnEntireMesh = 1000;
+	    
+		///The bad way (that kinda works?)
+
+		double weight = calculateArea(l) / totalArea;
+		Point3D centerPoint = new Point3D.Double();
+		
+		for(Integer i : l){  //find the center of the face
+			centerPoint.add( new Point3D.Double(_vertices.get(i).getX(), _vertices.get(i).getY(), _vertices.get(i).getZ()));
+			
+		}
+			return new Point3D.Double(weight * centerPoint.getX() / 3, weight * centerPoint.getY() / 3, weight * centerPoint.getZ() / 3);
+		
+		
+		///The good way (that doesnt really work)
+		/*
+		int pointsOnEntireMesh = 10000;
 		int pointsToUse = (int) Math.round((calculateArea(l)*pointsOnEntireMesh) / totalArea);
 		Point3D sumOfPoints = new Point3D.Double();
 		Random generator = new Random( System.currentTimeMillis());
@@ -203,13 +218,19 @@ public abstract class Mesh extends Object {
 							
 			
 			sumOfPoints.add(originPoint);
-		}				
-		System.out.println(holdOriginalValue);
-		return new Point3D.Double(sumOfPoints.getX() / holdOriginalValue,
-								  sumOfPoints.getY() / holdOriginalValue,
-								  sumOfPoints.getZ() / holdOriginalValue);
-	}
+		}			
+		
+		if(holdOriginalValue > 0){
+			return new Point3D.Double(sumOfPoints.getX() / holdOriginalValue,
+									  sumOfPoints.getY() / holdOriginalValue,
+						 			  sumOfPoints.getZ() / holdOriginalValue);
+		}else{
+			return new Point3D.Double();
+		}
+		*/
+	}		
 	
+		
 	public Point3D getBarycenter() {
 		/* TODO: PO3D Pratica 1 - calculate the barycenter of the mesh
 		 * * Point3D.Double(x, y, z) -> creates a new Point3D with doubles
@@ -219,8 +240,6 @@ public abstract class Mesh extends Object {
 		Point3D center = new Point3D.Double();
 		double totalArea = getSurfaceArea();
 		for(Face f : _faces){
-			System.out.println(center.getX() + " " + center.getY() + " " + center.getZ() + " ");
-
 			if(f.Vertices.size() == 3){
 				center.add(calcFacePoints(f.Vertices, totalArea));
 				
@@ -244,8 +263,7 @@ public abstract class Mesh extends Object {
 
 		
 		}
-		
-		return new Point3D.Double();
+		return center;
 	}
 	
 	public boolean isManifold() {
@@ -317,7 +335,7 @@ public abstract class Mesh extends Object {
 			
 			double s = (distanceAB + distanceBC + distanceCA) /2 ;
 			
-			area = Math.sqrt(s*(s-distanceAB)*(s-distanceBC)*(s-distanceCA));
+			area = Math.sqrt(s*(s-distanceAB)*(s-distanceBC)*(s-distanceCA));  // Heron's formula
 		
 			
 		}else if(l.size() == 4){   //quadrilateral
