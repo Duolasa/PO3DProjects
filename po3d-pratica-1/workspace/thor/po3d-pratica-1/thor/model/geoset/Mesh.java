@@ -2,10 +2,12 @@
 package thor.model.geoset; 
 
 import java.awt.geom.Point2D;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Random;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
@@ -160,14 +162,59 @@ public abstract class Mesh extends Object {
 	}
 
 	
+	
+	public Point3D calcFacePoints(List<Integer> l, double totalArea){
+		int pointsOnEntireMesh = 1000;
+		int pointsToUse = (int) Math.round((calculateArea(l)*pointsOnEntireMesh) / totalArea);
+		Point3D sumOfPoints = new Point3D.Double();
+		Random generator = new Random( System.currentTimeMillis() );
+		
+		while(pointsToUse-- > 0){
+			// generate random point after zeroing the existing points
+			//create some mockup points maybe
+			
+		}
+		
+		
+		return new Point3D.Double();
+
+	}
+	
 	public Point3D getBarycenter() {
 		/* TODO: PO3D Pratica 1 - calculate the barycenter of the mesh
 		 * * Point3D.Double(x, y, z) -> creates a new Point3D with doubles
 		 * * _maxVertex -> contains the max values of each coordinate
 		 * * _minVertex -> contains the min values of each coordinate
 		 */
+		Point3D center = new Point3D.Double();
+		double totalArea = getSurfaceArea();
+		for(Face f : _faces){
+			if(f.Vertices.size() == 3){
+				center.add(calcFacePoints(f.Vertices, totalArea));
+				//do stuff
+				
+			} else if(f.Vertices.size() == 4){
+				List<Integer> firstHalf = new  ArrayList<Integer>();
+				List<Integer> secondHalf = new  ArrayList<Integer>();
+				
+				
+				//divide the quadrilateral in 2 triangles
+				firstHalf.add(f.Vertices.get(0));
+				firstHalf.add(f.Vertices.get(1));
+				firstHalf.add(f.Vertices.get(2));
+				
+				secondHalf.add(f.Vertices.get(0));
+				secondHalf.add(f.Vertices.get(3));
+				secondHalf.add(f.Vertices.get(2));
+				
+				center.add(calcFacePoints(firstHalf, totalArea)); 
+				center.add(calcFacePoints(secondHalf, totalArea));
+			}
+		
+		}
+		
 	
-		return new Point3D.Double();
+		return center;
 	}
 	
 	public boolean isManifold() {
@@ -176,33 +223,45 @@ public abstract class Mesh extends Object {
 		 * * _vertices -> contains a list of all vertices of the mesh
 		 * * _faces -> contains the list of the id of the vertices that from it
 		 */
+		List<int[]> edgeList = new ArrayList<int[]>();
+		edgeList.add( new int[] {-9999, -9999, -9999});
+		boolean edgeAlreadyExists = false;
+		
+		for(Face f : _faces){							 // construct edge list
+			int numVertices = f.Vertices.size();						
+			for(int i=0; i < numVertices; i++){
+				int firstVertex = f.Vertices.get(i);
+				int secondVertex;
+				
+				if(i == numVertices - 1){ 
+					secondVertex = f.Vertices.get(0);
+				}else  secondVertex = f.Vertices.get(i + 1);
 
-		int numVertices = _vertices.size();
-		int aux1 = numVertices;
-		int aux2 = numVertices;
-		int edgeMatrix[][] = new int[numVertices][numVertices];
-		for(Face f : _faces){
-			numVertices = f.Vertices.size();
-			while(numVertices-- > 1){
-				int firstVertId = f.Vertices.get(numVertices);
-				int secondVertId = f.Vertices.get(numVertices - 1);
-				edgeMatrix[firstVertId][secondVertId]++;
-				edgeMatrix[secondVertId][firstVertId]++;
+
+				edgeAlreadyExists = false;
+				for(int j = 0; j < edgeList.size(); j++){
+					if(((edgeList.get(j)[0] == firstVertex) && (edgeList.get(j)[1] == secondVertex))
+					    || ((edgeList.get(j)[0] == secondVertex) && (edgeList.get(j)[1] == firstVertex))){   //edge exists
+						edgeList.get(j)[2]++;
+						edgeAlreadyExists = true;
+						break;
+					}
+				}
+				if(!edgeAlreadyExists){
+					edgeList.add( new int[] {firstVertex, secondVertex, 1});  //edge doesn't exist yet							
+				}
 			}
 		}
 		
-
-		while(aux1-- > 0 ){
-			while( aux2-- > 0){
-				if(edgeMatrix[aux1][aux2] > 2){
-					return false;
-				}
-			
+		
+		for(int j = 0; j < edgeList.size(); j++){
+			if( edgeList.get(j)[2] > 2){  // if an edge is used for more than 2 faces
+				return false;
 			}
-			aux2 = -1;
-	   }		
-		return true; 
-	}
+		}
+
+	return true;
+}
 	
 	public double calculateArea(List<Integer> l){
 		double area = 0;		
